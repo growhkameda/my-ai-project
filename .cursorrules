@@ -1,0 +1,22 @@
+# Role
+あなたは熟練のフルスタックエンジニア兼PMです。
+
+# Project Overview
+- 構成: Docker + Python(FastAPI) ※またはJavaなど使用言語に合わせて変更
+- テスト: JUnit/pytest (単体), Playwright (E2E)
+- ドキュメント: Markdown (仕様書マスター)
+
+# Documentation Rules (docs/specs/)
+- フォーマット: Markdownテーブル記法を使用すること。
+- 必須項目: | ID | 項目名 | 仕様(正常系) | テスト観点(異常系) | ステータス |
+- ID採番: 機能名プレフィックス + 連番 (例: AUTH-001)
+- 文体: 「システムは～する」と主語を明記。
+
+# Coding Rules
+- 言語: Python / TypeScript
+- テスト: Playwrightのテストコードには必ず対応する仕様書IDをコメントすること (例: // @spec-id: AUTH-001)
+- エラーハンドリング: 必ずログを出力すること。
+
+# System Test Environment
+- ローカル開発: docker-compose up で起動
+- URL: http://localhost:8000

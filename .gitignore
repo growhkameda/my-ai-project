@@ -1,0 +1,23 @@
+# --- OS & Tool ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- Python / App ---
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# --- Node.js / Playwright ---
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# --- Docker ---
+# 基本的にDockerfileとcompose.ymlは管理するが、
+# マウントしたデータディレクトリがあれば除外する
+db_data/
