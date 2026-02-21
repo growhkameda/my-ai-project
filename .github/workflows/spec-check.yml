@@ -11,22 +11,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # --- 1. textlintによる日本語校正（誤字脱字チェック） ---
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Node dependencies
+        run: npm ci  # package-lock.jsonをもとにtextlintをインストール
+
+      - name: Run textlint (誤字脱字・文法チェック)
+        run: npx textlint docs/specs/*.md
+
+      # --- 2. Pythonによる形式チェック（テーブル・IDチェック） ---
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
-        run: pip install pandas tabulate
-
-      - name: Run Spec Validation
+      - name: Run Format Check (形式チェック)
         shell: python
         run: |
           import glob
           import sys
           import re
 
-          # 判定ロジック
           files = glob.glob("docs/specs/*.md")
           error_count = 0
 
@@ -40,17 +49,17 @@ jobs:
                       print(f"❌ Error: {file} is not in table format.")
                       error_count += 1
                   
-                  # Rule 2: ID形式 (XXX-000) チェック
+                  # Rule 2: ID形式チェック
                   if not re.search(r'[A-Z]+-\d{3}', content):
                       print(f"❌ Error: {file} contains invalid ID format.")
                       error_count += 1
                       
                   # Rule 3: 「要確認」が残っていないか？
                   if "要確認" in content:
-                      print(f"⚠️ Warning: {file} contains unresolved '要確認'.")
-                      # Warningはエラーにせず、ログに残すだけにする運用も可
+                      print(f"❌ Error: {file} contains unresolved '要確認'.")
+                      error_count += 1
 
           if error_count > 0:
               sys.exit(1)
           else:
-              print("✅ All checks passed!")
+              print("✅ All format checks passed!")
