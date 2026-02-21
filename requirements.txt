@@ -1,0 +1,6 @@
+# バックエンド（DZM-001〜004 ユーザー登録API）
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+passlib[bcrypt]

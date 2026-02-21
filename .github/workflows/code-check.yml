@@ -1,0 +1,72 @@
+name: Code Quality Check
+
+on:
+  pull_request:
+    paths:
+      - 'src/**' # src配下のコードが変更されたPRのみ発動
+
+jobs:
+  # -------------------------------------------
+  # 1. Pythonの静的解析 (Ruff)
+  # -------------------------------------------
+  lint-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install Ruff
+        # ruffは超高速なPythonのLinter&Formatterです
+        run: pip install ruff
+        
+      - name: Run Ruff Check
+        # src/ 配下のPythonコードをチェック
+        run: ruff check src/
+
+  # -------------------------------------------
+  # 2. フロントエンドの静的解析 (ESLint等)
+  # -------------------------------------------
+  # ※package.jsonに "lint" スクリプトが定義されている前提
+  lint-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install Dependencies
+        # プロジェクトルートにpackage.jsonがある場合
+        run: npm ci || echo "No package.json found, skipping."
+        
+      - name: Run ESLint
+        # フロントエンドのコードチェックを実行
+        run: npm run lint || echo "No lint script defined, skipping."
+
+  # -------------------------------------------
+  # 3. プロジェクト独自ルール (@spec-id の記載チェック)
+  # -------------------------------------------
+  check-project-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check for @spec-id Traceability
+        run: |
+          echo "コード内に仕様書ID（@spec-id）の記載があるかチェックします..."
+          
+          # src配下のファイルから '@spec-id' という文字列を検索
+          # 1つも見つからなければエラー（exit 1）にしてマージをブロックする
+          if grep -rnw 'src/' -e '@spec-id'; then
+            echo "✅ 仕様書IDのコメントが確認できました！"
+          else
+            echo "❌ エラー: コード内に '@spec-id: DZM-XXX' のコメントが見つかりません。"
+            echo "AIにコードを生成させる際は、必ず仕様書IDを明記させてください。"
+            exit 1
+          fi
