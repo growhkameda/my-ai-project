@@ -1,4 +1,4 @@
 # src/backend/services/__init__.py
-from src.backend.services.user_service import user_service
+from src.backend.services.user_service import register_user
 
-__all__ = ["user_service"]
+__all__ = ["register_user"]
