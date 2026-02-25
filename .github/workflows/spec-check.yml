@@ -1,0 +1,65 @@
+name: Spec Quality Check
+
+on:
+  pull_request:
+    paths:
+      - 'docs/specs/**.md'
+
+jobs:
+  validate-spec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- 1. textlintによる日本語校正（誤字脱字チェック） ---
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Node dependencies
+        run: npm ci  # package-lock.jsonをもとにtextlintをインストール
+
+      - name: Run textlint (誤字脱字・文法チェック)
+        run: npx textlint docs/specs/*.md
+
+      # --- 2. Pythonによる形式チェック（テーブル・IDチェック） ---
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Run Format Check (形式チェック)
+        shell: python
+        run: |
+          import glob
+          import sys
+          import re
+
+          files = glob.glob("docs/specs/*.md")
+          error_count = 0
+
+          for file in files:
+              print(f"Checking {file}...")
+              with open(file, 'r', encoding='utf-8') as f:
+                  content = f.read()
+                  
+                  # Rule 1: テーブル形式か？
+                  if "| ID |" not in content:
+                      print(f"❌ Error: {file} is not in table format.")
+                      error_count += 1
+                  
+                  # Rule 2: ID形式チェック
+                  if not re.search(r'[A-Z]+-\d{3}', content):
+                      print(f"❌ Error: {file} contains invalid ID format.")
+                      error_count += 1
+                      
+                  # Rule 3: 「要確認」が残っていないか？
+                  if "要確認" in content:
+                      print(f"❌ Error: {file} contains unresolved '要確認'.")
+                      error_count += 1
+
+          if error_count > 0:
+              sys.exit(1)
+          else:
+              print("✅ All format checks passed!")

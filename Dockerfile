@@ -4,8 +4,9 @@ FROM python:3.11-slim
 # 作業ディレクトリ設定
 WORKDIR /app
 
-# 依存関係のインストール (FastAPIとDB接続用ライブラリ)
-RUN pip install fastapi uvicorn[standard] sqlalchemy psycopg2-binary
+# 依存関係のインストール（FastAPI, DB, パスワードハッシュ用）
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 # ソースコードをコピー
 COPY ./src /app/src
